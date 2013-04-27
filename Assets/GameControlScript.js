@@ -1,11 +1,11 @@
 #pragma strict
 
-private var Team1Score : int;
-private var Team2Score : int;
+public var OrangeScore : int;
+public var BlueScore : int;
 
 function Start () {
-	Team1Score = 0;
-	Team2Score = 0;
+	OrangeScore = 0;
+	BlueScore = 0;
 
 }
 
@@ -14,17 +14,13 @@ function Update () {
 }
 
 
-// // MyClass.js (Javascript):
-// static function Multiply (float a, float b) : float {
-//     return a*b;
-// }
+function OnGUI () {
+	var h = 25;
+	var w = 75;
+	// GUI.skin.label.fontSize = 20;
+	// GUI.Label(Rect((Screen.width / 2) - w/2, (Screen.height / 2) - h/2, w, h), "SNAPE");
 
+	GUI.Box(Rect(0, 0, w, h), "Orange: " + OrangeScore);
+	GUI.Box(Rect(Screen.width - w, 0, w, h), "Blue: " + BlueScore);
 
-// public static function increment_score (team : int) {
-// 	if (team == 1) {
-// 		Team1Score++;
-// 	}
-// 	if (team == 2) {
-// 		Team2Score++;
-// 	}
-// }
+}

@@ -3,14 +3,20 @@
 public var MoveTorque : float;
 public var IsSnape : boolean;
 public var IsPlayer : boolean;
-public var IsEnemy : boolean;
+public var IsCPU : boolean;
 
 private var SnapeDirection : Vector2;
-private var SnapeTimeRemaining : float;
+private var SnapeMoveTimeRemaining : float;
+private var SnapeColorTimeRemaining : float;
+private var SnapeFlashTimeRemaining : float;
+public var SnapeColor : String;
+
+private var SnapeColors = ["Green", "Orange", "Blue"];
 
 private var snape : GameObject;
 
 function Start () {
+	SnapeColor = "Green";
 }
 
 function FixedUpdate () {
@@ -25,16 +31,23 @@ function FixedUpdate () {
 	// Debug.Log("ball speed: " + rigidbody.velocity.magnitude);
 
 	if (IsSnape) {
-		if (SnapeTimeRemaining > 0) {
+		if ((SnapeMoveTimeRemaining > 0) && (SnapeColor == "Green")) {
 			move_towards_vector(SnapeDirection);
-			SnapeTimeRemaining -= Time.deltaTime;
 		}
 		else {
 			get_new_snape_direction();
 		}
+		if (SnapeColorTimeRemaining < 0) {
+			SnapeColor = SnapeColors[Mathf.Floor(Random.Range(0, SnapeColors.length))];
+			Debug.Log("Snape color is now " + SnapeColor);
+
+			SnapeColorTimeRemaining = Random.Range(5, 10);
+		}
+		SnapeMoveTimeRemaining -= Time.deltaTime;
+		SnapeColorTimeRemaining -= Time.deltaTime;
 	}
 
-	if (IsEnemy) {
+	if (IsCPU) {
 		var snape = find_snape();
 		var diff = snape.transform.position - transform.position;
 		move_towards_vector(Vector2(diff.z, diff.x));
@@ -47,6 +60,13 @@ function OnCollisionEnter (collisioninfo : Collision) {
 	if (IsSnape) {
 		if (collisioninfo.gameObject.layer == 8) {
 			Debug.Log("snape hit by ball!");
+			if (SnapeColor == "Blue") {
+				GameObject.Find("Referee").GetComponent(GameControlScript).OrangeScore++;
+			}
+			if (SnapeColor == "Orange") {
+				GameObject.Find("Referee").GetComponent(GameControlScript).BlueScore++;
+			}
+
 		}
 		// Debug.Log("collided with " + collisioninfo.gameObject);
 	}
@@ -58,13 +78,14 @@ function move_towards_vector (input : Vector2) {
 }
 
 function get_new_snape_direction () {
-	SnapeTimeRemaining = Random.Range(1, 3);
+	SnapeMoveTimeRemaining = Random.Range(1, 3);
 	SnapeDirection = Random.insideUnitCircle;
 }
 
 function find_snape () {
-	var gos = GameObject.FindGameObjectsWithTag("Snape");
-	for (var go in gos) {
-		return go;
-	}
+	return GameObject.Find("Snape");
+}
+
+function change_snape_color () {
+	
 }
