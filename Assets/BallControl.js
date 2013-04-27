@@ -38,10 +38,8 @@ function FixedUpdate () {
 			get_new_snape_direction();
 		}
 		if (SnapeColorTimeRemaining < 0) {
-			SnapeColor = SnapeColors[Mathf.Floor(Random.Range(0, SnapeColors.length))];
-			Debug.Log("Snape color is now " + SnapeColor);
-
-			SnapeColorTimeRemaining = Random.Range(5, 10);
+			// Debug.Log("Snape color is now " + SnapeColor);
+			change_snape_color_random();
 		}
 		SnapeMoveTimeRemaining -= Time.deltaTime;
 		SnapeColorTimeRemaining -= Time.deltaTime;
@@ -50,7 +48,14 @@ function FixedUpdate () {
 	if (IsCPU) {
 		var snape = find_snape();
 		var diff = snape.transform.position - transform.position;
-		move_towards_vector(Vector2(diff.z, diff.x));
+		var direction = Vector2(diff.z, diff.x);
+			// Debug.Log("Snape color: " + snape.GetComponent(BallControl).SnapeColor);
+			// Debug.Log("CPU color: " + gameObject.tag);
+		if (snape.GetComponent(BallControl).SnapeColor == gameObject.tag) {
+			// Debug.Log("wrong way!");
+			direction = -direction;
+		}
+		move_towards_vector(direction);
 	}
 
 }
@@ -59,14 +64,17 @@ function OnCollisionEnter (collisioninfo : Collision) {
 	// Debug.Log("collision!");
 	if (IsSnape) {
 		if (collisioninfo.gameObject.layer == 8) {
-			Debug.Log("snape hit by ball!");
-			if (SnapeColor == "Blue") {
-				GameObject.Find("Referee").GetComponent(GameControlScript).OrangeScore++;
+			// Debug.Log("snape hit by ball!");
+			if (collisioninfo.relativeVelocity.magnitude > 3) {
+				if (SnapeColor == "Blue") {
+					GameObject.Find("Referee").GetComponent(GameControlScript).OrangeScore++;
+				}
+				if (SnapeColor == "Orange") {
+					GameObject.Find("Referee").GetComponent(GameControlScript).BlueScore++;
+				}
+				reset_snape();
 			}
-			if (SnapeColor == "Orange") {
-				GameObject.Find("Referee").GetComponent(GameControlScript).BlueScore++;
-			}
-
+			// Debug.Log(collisioninfo.relativeVelocity.magnitude);
 		}
 		// Debug.Log("collided with " + collisioninfo.gameObject);
 	}
@@ -86,6 +94,34 @@ function find_snape () {
 	return GameObject.Find("Snape");
 }
 
-function change_snape_color () {
+function change_snape_color_random () {
+
+	SnapeColor = SnapeColors[Mathf.Floor(Random.Range(0, SnapeColors.length))];
+
+
+	if (SnapeColor == "Blue") {
+		// Debug.Log("changing color to blue");
+		transform.renderer.material.color = Color.cyan;
+	}
+	if (SnapeColor == "Orange") {
+	transform.renderer.material.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
+	}
+	if (SnapeColor == "Green") {
+		transform.renderer.material.color = Color.green;
+	}
+
+	SnapeColorTimeRemaining = Random.Range(3, 8);
+
+
+	// Debug.Log("current color is: " + transform.renderer.material.color);
+	// transform.renderer.material.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
+	// Debug.Log("current color is now: " + transform.renderer.material.color);
 	
+}
+
+function reset_snape () {
+	SnapeColor = "Green";
+	transform.renderer.material.color = Color.green;
+	SnapeColorTimeRemaining = Random.Range(5, 10);
+
 }
