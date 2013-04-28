@@ -5,6 +5,8 @@ public var BlueScore : int;
 
 public var PointsToWin : int;
 
+public var Difficulty : float; // 0 is hardest, 1+ is easiest
+
 private var ScoreDisplayTime : float;
 private var OrangePointDisplay : boolean;
 private var BluePointDisplay : boolean;

@@ -27,6 +27,7 @@ private var CPUCurrentAction : String;
 private var SnapeColors = ["Green", "Orange", "Blue"];
 
 private var snape : GameObject;
+private var ref : GameObject;
 
 function Start () {
 	if (IsSnape) {
@@ -37,6 +38,7 @@ function Start () {
 		CPUCurrentAction = "Attack";
 		CPUMoveTimeRemaining = Random.Range(3.0, 5.0);
 	}
+	ref = GameObject.Find("Referee");
 }
 
 function FixedUpdate () {
@@ -95,8 +97,9 @@ function FixedUpdate () {
 			diff = snape.transform.position - transform.position;
 		}
 		var direction = Vector2(diff.z, diff.x);
-			// Debug.Log("Snape color: " + snape.GetComponent(BallControl).SnapeColor);
-			// Debug.Log("CPU color: " + gameObject.tag);
+		var difficulty = ref.GetComponent(GameControlScript).Difficulty;
+		var random_direction = Random.insideUnitCircle.normalized;
+		direction = (direction + (random_direction * difficulty)).normalized;
 		if (CPUCurrentAction == "Run") {
 			direction = -direction;
 		}
@@ -141,7 +144,7 @@ function OnCollisionEnter (collisioninfo : Collision) {
 		// }
 		if (IsSnape) {
 			// Debug.Log("snape hit by ball!");
-			if (collisioninfo.relativeVelocity.magnitude > 8) {
+			if (collisioninfo.relativeVelocity.magnitude > 6) {
 				
 				if (SnapeColor == "Blue") {
 					GameObject.Find("Referee").GetComponent(GameControlScript).Score("Orange");
