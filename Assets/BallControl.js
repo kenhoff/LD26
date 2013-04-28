@@ -15,6 +15,8 @@ private var SnapeMoveTimeRemaining : float;
 private var SnapeColorTimeRemaining : float;
 private var SnapeFlashTimeRemaining : float;
 public var SnapeColor : String;
+public var SnapeDampening : float;
+private var LastSnapeColor : String;
 
 
 private var CPUDirection : Vector2;
@@ -28,6 +30,7 @@ private var snape : GameObject;
 
 function Start () {
 	if (IsSnape) {
+		LastSnapeColor = "None";
 		reset_snape();
 	}
 	if (IsCPU) {
@@ -51,13 +54,17 @@ function FixedUpdate () {
 		if ((SnapeMoveTimeRemaining > 0) && (SnapeColor == "Green")) {
 			move_towards_vector(SnapeDirection);
 		}
-		else {
+		else if (SnapeColor == "Green") {
 			get_new_snape_direction();
+		}
+
+		if ((SnapeColor == "Blue") || (SnapeColor == "Orange")) {
+			rigidbody.angularVelocity = rigidbody.angularVelocity * Time.deltaTime * SnapeDampening;
 		}
 
 		if (SnapeColorTimeRemaining < 0) {
 			// Debug.Log("Snape color is now " + SnapeColor);
-			change_snape_color_random();
+			change_to_next_snape_color();
 		}
 		SnapeMoveTimeRemaining -= Time.deltaTime;
 		SnapeColorTimeRemaining -= Time.deltaTime;
@@ -126,15 +133,15 @@ function OnCollisionEnter (collisioninfo : Collision) {
 	// Debug.Log("collision!");
 	
 	if (collisioninfo.gameObject.layer == 8) {
-		if (collisioninfo.relativeVelocity.magnitude > 2) {
-			audio.clip = BallHitClip;
-			// audio.volume = .5;
-			audio.Play();
-			// audio.volume = 1;
-		}
+		// if (collisioninfo.relativeVelocity.magnitude > 2) {
+		// 	// audio.clip = BallHitClip;
+		// 	// // audio.volume = .5;
+		// 	// audio.Play();
+		// 	// audio.volume = 1;
+		// }
 		if (IsSnape) {
 			// Debug.Log("snape hit by ball!");
-			if (collisioninfo.relativeVelocity.magnitude > 3) {
+			if (collisioninfo.relativeVelocity.magnitude > 8) {
 				
 				if (SnapeColor == "Blue") {
 					GameObject.Find("Referee").GetComponent(GameControlScript).Score("Orange");
@@ -162,38 +169,38 @@ function move_towards_vector (input : Vector2) {
 }
 
 function get_new_snape_direction () {
-	SnapeMoveTimeRemaining = Random.Range(1, 3);
-	SnapeDirection = Random.insideUnitCircle;
+	SnapeMoveTimeRemaining = Random.Range(1.0, 3.0);
+	var normalized_towards_center = -transform.position.normalized;
+	var vec2_toward_center = Vector2(normalized_towards_center.z, normalized_towards_center.x).normalized;
+	// Debug.Log("heading: " + vec2_toward_center.normalized);
+	SnapeDirection = (Random.insideUnitCircle.normalized + vec2_toward_center.normalized).normalized; //Vector2
+	// SnapeDirection = (Random.insideUnitCircle.normalized + (vec2_toward_center*2)).normalized; //Vector2
 }
 
 function find_snape () {
 	return GameObject.Find("Snape");
 }
 
-function change_snape_color_random () {
+function change_to_next_snape_color () {
 
-	SnapeColor = SnapeColors[Mathf.Floor(Random.Range(0, SnapeColors.length))];
+	// if snape is currently green, change to orange/blue for 2-4 seconds
 
-
-
-	if (SnapeColor == "Blue") {
-		// Debug.Log("changing color to blue");
-		transform.renderer.material.color = Color.cyan;
-		SnapeColorTimeRemaining = Random.Range(2.0, 4.0);
-
-	}
-	if (SnapeColor == "Orange") {
-		transform.renderer.material.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
-		SnapeColorTimeRemaining = Random.Range(2.0, 4.0);
-
-	}
 	if (SnapeColor == "Green") {
-		transform.renderer.material.color = Color.green;
-		SnapeColorTimeRemaining = Random.Range(3.0, 5.0);
-
+		SnapeColor = pick_orange_or_blue();
+		if (SnapeColor == "Blue") {
+			transform.renderer.material.color = Color.cyan;
+			light.color = Color.cyan;
+		}
+		else {
+			transform.renderer.material.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
+			light.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
+		}
+		SnapeColorTimeRemaining = Random.Range(2.0, 4.0);
 	}
 
-	SnapeColorTimeRemaining = Random.Range(3.0, 5.0);
+	else {
+		reset_snape();
+	}
 
 	if ((SnapeColor == "Blue") || (SnapeColor == "Orange")){
 		audio.clip = SnapeOrangeBlueClip;
@@ -203,16 +210,51 @@ function change_snape_color_random () {
 		audio.clip = SnapeGreenNoHitClip;
 		audio.Play();
 	}
-
-	// Debug.Log("current color is: " + transform.renderer.material.color);
-	// transform.renderer.material.color = Color(255.0/255, 81.0/255, 0/255, 255/255);
-	// Debug.Log("current color is now: " + transform.renderer.material.color);
-	
 }
 
 function reset_snape () {
 	SnapeColor = "Green";
 	transform.renderer.material.color = Color.green;
+	light.color = Color.green;
+
 	SnapeColorTimeRemaining = Random.Range(5, 10);
 
+}
+
+function pick_orange_or_blue () {
+
+	if (LastSnapeColor == "None") {
+		if (Random.Range(0, 1) == 0) {
+			LastSnapeColor = "Blue";
+			return "Blue";
+		}
+		else {
+			LastSnapeColor = "Orange";
+			return "Orange";
+		}
+	}
+
+	if (LastSnapeColor == "Blue") {
+		LastSnapeColor = "Orange";
+		return "Orange";
+	}
+	else {
+		LastSnapeColor = "Blue";
+		return "Blue";
+	}
+
+	// orange_score = GameObject.Find("Referee").GetComponent(GameControlScript).OrangeScore;
+	// blue_score = GameObject.Find("Referee").GetComponent(GameControlScript).BlueScore;
+	// score_sum = orange_score + 1.0 + blue_score + 1.0; 
+
+	// orange_chance = 1 - ((orange_score + 1) / score_sum);
+	// if (Random.value > orange_chance) {
+	// 	return "Orange";
+	// }
+	// else return "Blue";
+
+	// if (Random.Range(0, 2) == 0) {
+	// 	return "Orange";
+	// } 
+	// else return "Blue";
 }
