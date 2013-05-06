@@ -57,7 +57,7 @@ function OnGUI () {
 		}
 		var h2 = 75;
 		var w2 = 350;
-		GUI.Box(Rect((Screen.width / 2) - w2/2, (Screen.height / 2) - h2/2 + 50 + h2, w2, h2), "This is the Snape. \nWhen the snape turns your team's color, DEFEND it. \nWhen the snape turns the other team's color, THWACK it. \n10 points to win!");
+		GUI.Box(Rect((Screen.width / 2) - w2/2, (Screen.height / 2) - h2/2 + 50 + h2, w2, h2), "This is the Snape. \nWhen the snape turns your team's color, DEFEND it. \nWhen the snape turns the other team's color, THWACK it. \n5 points to win!");
 	}
 	
 }
