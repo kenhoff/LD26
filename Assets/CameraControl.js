@@ -6,6 +6,9 @@ public var CameraSmoothness : float;
 public var CameraMovesWithPlayer : boolean;
 
 function Start () {
+	if (!player.gameObject.activeInHierarchy) {
+		player = GameObject.Find("Snape").transform;
+	}
 
 }
 

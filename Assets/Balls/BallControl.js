@@ -23,6 +23,7 @@ private var CPUDirection : Vector2;
 private var CPUMoveTimeRemaining : float;
 private var CPUCurrentAction : String;
 // private var CPUFlashTimeRemaining : float;
+// public var CPUDifficulty : float = 1.0; // 0 is hardest, 1+ is easier
 
 private var SnapeColors = ["Green", "Orange", "Blue"];
 
